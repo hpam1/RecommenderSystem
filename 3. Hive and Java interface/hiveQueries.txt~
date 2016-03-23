@@ -1,0 +1,15 @@
+
+#to create meta data table with each line as a single row.
+create table meta_data (line string);
+
+#load the data from hdfs into hive
+load data inpath '/user/rgottam1/project/inputsenti/meta_Books.json.gz' overwrite into table meta_data;
+
+#each line of meta data is read as a json tuple and book details (i.e book id and book title ) are extracted from the above table 
+create table item_details as select b.itemid,b.itemtitle from meta_data a lateral view json_tuple(a.line,'asin','title') b as itemid, itemtitle;
+
+#create external table for output of itemitem recommendations
+create external table iirecomm ( itemId string, recList string) row format delimited fields terminated by ',' location '/user/rgottam1/project/outputii/';
+
+#create external table for output of user user recommendations
+create external table uurecomm ( itemId string, recList string) row format delimited fields terminated by ',' location '/user/rgottam1/project/outputuu/';
